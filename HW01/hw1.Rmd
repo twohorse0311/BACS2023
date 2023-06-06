@@ -1,0 +1,90 @@
+---
+title: "HW1"
+author: '111078513'
+date: "`r Sys.Date()`"
+output:
+  pdf_document: 
+    includes:
+      in_header: "preamble.tex"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load customers data
+
+```{r}
+data <- read.table("customers.txt", header = T)
+age <- data$age
+head(age)
+```
+
+### 1. What is the 5th element in the original list of ages?
+
+```{r}
+q1 <- age[5]
+q1
+```
+
+### 2. What is the fifth lowest age?
+remove the duplicated data from 'age' and get the fifth lowest
+
+```{r}
+sort_age <- sort(age)
+uni_sort_age <- unique(sort_age)
+uni_sort_age[5]
+```
+
+### 3. Extract the five lowest ages together
+
+```{r}
+head(uni_sort_age, 5)
+```
+
+### 4. Get the five highest ages by first sorting them in decreasing order first.
+
+```{r}
+tail(uni_sort_age, 5)
+```
+
+### 5. What is the average (mean) age?
+
+```{r}
+mean(age)
+```
+
+### 6. What is the standard deviation of ages?
+
+```{r}
+sd(age)
+```
+
+### 7. Make a new variable called age_diff, with the difference between each age and the mean age.
+
+```{r}
+age_diff <- age - mean(age)
+head(age_diff)
+```
+
+### 8. What is the average age_diff?
+
+```{r}
+mean(age_diff)
+```
+
+### 9. Visualize the raw data as we did in class: (a) histogram, (b) density plot, (c) boxplot+stripchart
+
+```{r out.height='100%', fig.align='center'}
+
+# (a) histogram
+hist(age)
+
+# (b) density plot
+plot(density(age))
+
+# (c) boxplot+stripchart
+boxplot(age, horizontal = TRUE)
+stripchart(age, method = "stack", add = TRUE)
+```
+

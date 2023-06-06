@@ -1,0 +1,100 @@
+install.packages("seminr")
+library(seminr)
+sec_q <- read.table("security_data_sem.csv", header = TRUE, sep = ",")
+colnames(sec_q)
+
+# Question 1) Composite Path Models using PLS-PM
+
+## a. Create a PLS path model using SEMinR, with all the following characteristics:
+
+### (i) Measurement model – all constructs are measured as composites:
+
+sec_q_intxn_mm <- constructs(
+  composite("TRUST", multi_items("TRST", 1:4)),
+  composite("SEC", multi_items("PSEC", 1:4)), 
+  composite("REP", multi_items("PREP", 1:4)), 
+  composite("INV", multi_items("PINV", 1:3)), 
+  composite("POL", multi_items("PPSS", 1:3)),
+  composite("FAML", single_item("FAML1")),
+  interaction_term(iv="REP", moderator="POL", method=orthogonal)
+)
+
+### (ii). Structural Model – paths between constructs as shown in this causal model:
+
+sec_q_intxn_sm <- relationships(
+  paths(from = c("TRUST", "REP", "INV", "POL", "FAML", "REP*POL"), 
+        to = "SEC"), 
+  paths(from = "SEC", to = "TRUST")
+)
+
+sec_q_intxn_pls <- estimate_pls(data = sec_q,
+                               measurement_model = sec_q_intxn_mm, 
+                               structural_model = sec_q_intxn_sm) 
+
+## b. Show us the following results in table or figure formats:
+
+### (i) Plot a figure of the estimated model
+
+plot(sec_q_intxn_pls)
+
+### (ii) Weights and loadings of composites
+
+sec_q_report <- summary(sec_q_intxn_pls)
+
+# weight
+sec_q_report$weights
+
+# loadongs
+sec_q_report$loadings
+
+### (iii) Regression coefficients of paths between factors
+
+sec_q_intxn_pls$path_coef
+
+### (iv) Bootstrapped path coefficients: t-values, 95% CI
+
+boot_pls <- bootstrap_model(sec_q_intxn_pls, nboot = 1000) 
+summary(boot_pls)$bootstrapped_total_paths
+
+# Question 2) Common-Factor Models using CB-SEM
+
+## a. Create a common factor model using SEMinR, with the following characteristics:
+
+### (i) Either respecify all the constructs as being reflective(), or use the as.reflective() function to convert your earlier measurement model to being entirely reflective.
+
+sec_q_intxn_cf_mm <- constructs(
+  reflective("TRUST", multi_items("TRST", 1:4)),
+  reflective("SEC", multi_items("PSEC", 1:4)), 
+  reflective("REP", multi_items("PREP", 1:4)), 
+  reflective("INV", multi_items("PINV", 1:3)), 
+  reflective("POL", multi_items("PPSS", 1:3)),
+  reflective("FAML", single_item("FAML1")),
+  interaction_term(iv="REP", moderator="POL", method=orthogonal)
+)
+
+### (ii) Use the same structural model as before.
+
+sec_q_intxn_sm <- relationships(
+  paths(from = c("TRUST", "REP", "INV", "POL", "FAML", "REP*POL"), 
+        to = "SEC"), 
+  paths(from = "SEC", to = "TRUST")
+)
+
+sec_q_intxn__cf_pls <- estimate_cbsem( data = sec_q,
+                              measurement_model = sec_q_intxn_cf_mm, 
+                              structural_model = sec_q_intxn_sm)
+
+## b. Show us the following results in table or figure formats
+
+### (i) Plot a figure of the estimated model (it will look different from your PLS model!)
+
+plot(sec_q_intxn__cf_pls)
+
+### (ii) Loadings of composites
+
+sec_q_intxn__cf_pls_report <- summary(sec_q_intxn__cf_pls)
+sec_q_intxn__cf_pls_report$loadings
+
+### (iii) Regression coefficients of paths between factors, and their p-values
+
+sec_q_intxn__cf_pls_report$paths[c("coefficients", "pvalues")]
